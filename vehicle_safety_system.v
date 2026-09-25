@@ -43,7 +43,7 @@ module vehicle_safety_system(
     always @ (SW, LED) begin
     
         // SEAT_WARN on if driver seatelt is not fastened or if there is a passenger and they aren't wearing a seatbelt
-        LED [11] = (!SB) || (PASS_OCC && !SB_P);
+        LED [11] = KEY && ((!SB) || (PASS_OCC && !SB_P));
         
         // DOOR_WARN if driver door open
         LED[10] = !DOOR;
@@ -67,10 +67,19 @@ module vehicle_safety_system(
         LED[14] = KEY && (!DOOR || LED[11] || PBRK);
         
         // WARN_PRI1 on if TMP not ok, AIB not ok, BAT not ok
-        LED[12] = LED[5] || LED[6] || LED[7]; 
+        LED[12] = KEY && (LED[5] || LED[6] || LED[7]); 
         
         // WARN PRI2 on if PRI1 not on, door/hood/trunk open, or seat warning or pbrk engaged
         LED[13] = !LED[12] && (LED[8] || LED[9] || LED[10] || LED[11] || PBRK);
+        
+        //service mode when KEY, BRK, PARK, SRV
+        if(SRV)
+            begin
+                LED[5] = 1'b0;
+                LED[6] = 1'b0;
+                LED[7] = 1'b0;
+                
+            end
         
         // START_PERMIT
         if(KEY && BRK && PARK && BAT_OK && TMP_OK)
